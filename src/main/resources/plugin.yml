@@ -2,3 +2,7 @@ name: ChestShop
 version: '${project.version}'
 main: sudark.chestshop.ChestShop
 api-version: '1.21'
+commands:
+  enchants:
+    description: "Enchants a item"
+    usage: "/enchants <item> <enchant> <level>"
