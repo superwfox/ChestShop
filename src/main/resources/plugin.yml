@@ -1,0 +1,4 @@
+name: ChestShop
+version: '${project.version}'
+main: sudark.chestshop.ChestShop
+api-version: '1.21'
