@@ -3,9 +3,6 @@ package sudark.chestshop;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -13,7 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IntializeInventory {
+public class InitializeInventory {
 
     static ItemStack[] shopSetting1 = {
             new ItemStack(Material.GRASS_BLOCK, 32),
@@ -21,13 +18,30 @@ public class IntializeInventory {
             new ItemStack(Material.COBBLESTONE, 32),
             new ItemStack(Material.DIRT, 32),
             new ItemStack(Material.SAND, 32),
+            new ItemStack(Material.COBBLED_DEEPSLATE, 32),
+            new ItemStack(Material.ANDESITE, 16),
+            new ItemStack(Material.GRANITE, 16),
+            new ItemStack(Material.DIORITE, 16),
+
             new ItemStack(Material.CLAY, 32),
-            new ItemStack(Material.DEEPSLATE, 32),
+            new ItemStack(Material.BLACKSTONE, 16),
+            new ItemStack(Material.DARK_PRISMARINE, 16),
+            new ItemStack(Material.GLASS, 16),
+            new ItemStack(Material.ICE, 16),
+            new ItemStack(Material.SCAFFOLDING, 16),
             new ItemStack(Material.QUARTZ_BLOCK, 16),
             new ItemStack(Material.PRISMARINE, 16),
+            new ItemStack(Material.CALCITE, 16),
 
-            new ItemStack(Material.DARK_PRISMARINE, 16),
-            new ItemStack(Material.GLASS, 16)
+            new ItemStack(Material.TERRACOTTA, 16),
+            new ItemStack(Material.OCHRE_FROGLIGHT, 8),
+            new ItemStack(Material.PEARLESCENT_FROGLIGHT, 8),
+            new ItemStack(Material.VERDANT_FROGLIGHT, 8),
+            new ItemStack(Material.SEA_LANTERN, 8),
+            new ItemStack(Material.END_ROD, 8),
+            new ItemStack(Material.MAGMA_BLOCK, 8),
+            new ItemStack(Material.RED_SAND, 32),
+            new ItemStack(Material.GRAVEL, 32)
     };
 
     static ItemStack[] shopSetting2 = {
@@ -39,7 +53,7 @@ public class IntializeInventory {
             new ItemStack(Material.BROWN_MUSHROOM, 16),
             new ItemStack(Material.RED_MUSHROOM, 16),
             new ItemStack(Material.MOSS_BLOCK, 16),
-            new ItemStack(Material.AIR, 16),
+            new ItemStack(Material.HONEY_BOTTLE, 16),
 
             new ItemStack(Material.ACACIA_SAPLING, 8),
             new ItemStack(Material.BAMBOO, 8),
@@ -76,8 +90,25 @@ public class IntializeInventory {
             new ItemStack(Material.SPRUCE_LOG, 8),
             new ItemStack(Material.CRIMSON_STEM, 8),
             new ItemStack(Material.WARPED_STEM, 8),
+
             new ItemStack(Material.MANGROVE_ROOTS, 8),
-            new ItemStack(Material.MANGROVE_LOG, 8)
+            new ItemStack(Material.MANGROVE_LOG, 8),
+            new ItemStack(Material.PALE_OAK_LOG, 8),
+            new ItemStack(Material.BAMBOO_BLOCK, 8),
+
+            new ItemStack(Material.DARK_OAK_LEAVES, 8),
+            new ItemStack(Material.OAK_LEAVES, 8),
+            new ItemStack(Material.SPRUCE_LEAVES, 8),
+            new ItemStack(Material.JUNGLE_LEAVES, 8),
+            new ItemStack(Material.ACACIA_LEAVES, 8),
+
+            new ItemStack(Material.AZALEA_LEAVES, 8),
+            new ItemStack(Material.FLOWERING_AZALEA_LEAVES, 8),
+            new ItemStack(Material.PALE_OAK_LEAVES, 8),
+            new ItemStack(Material.CHERRY_LEAVES, 8),
+            new ItemStack(Material.MANGROVE_LEAVES, 8),
+            new ItemStack(Material.BIRCH_LEAVES, 8)
+
     };
 
     static ItemStack[] shopSetting5 = {
@@ -140,11 +171,10 @@ public class IntializeInventory {
             new ItemStack(Material.BLACK_DYE, 8)
     };
 
-    public void open(Player pl, int mode, PlayerInteractEvent e) {
-        e.setCancelled(true);
+    public static void open(Player pl, int mode) {
         switch (mode) {
             case 1: {
-                Inventory inv = Bukkit.createInventory(pl, 18, "建材商 | §lBLOCKS");
+                Inventory inv = Bukkit.createInventory(pl, 27, "建材铺 | §lBLOCKS");
                 inv.setContents(shopSetting1);
                 fillEmpty(inv);
                 pl.openInventory(inv);
@@ -165,21 +195,21 @@ public class IntializeInventory {
                 break;
             }
             case 4: {
-                Inventory inv = Bukkit.createInventory(pl, 18, "木匠铺 | §lWOODS");
+                Inventory inv = Bukkit.createInventory(pl, 18, "木料铺 | §lWOODS");
                 inv.setContents(shopSetting4);
                 fillEmpty(inv);
                 pl.openInventory(inv);
                 break;
             }
             case 5: {
-                Inventory inv = Bukkit.createInventory(pl, 18, "染坊 | §lWOOL");
+                Inventory inv = Bukkit.createInventory(pl, 18, "羊毛铺 | §lWOOL");
                 inv.setContents(shopSetting5);
                 fillEmpty(inv);
                 pl.openInventory(inv);
                 break;
             }
             case 6: {
-                Inventory inv = Bukkit.createInventory(pl, 18, "染坊 | §lCONCRETE");
+                Inventory inv = Bukkit.createInventory(pl, 18, "混凝土坊 | §lCONCRETE");
                 inv.setContents(shopSetting6);
                 fillEmpty(inv);
                 pl.openInventory(inv);
@@ -192,10 +222,14 @@ public class IntializeInventory {
                 pl.openInventory(inv);
                 break;
             }
+            case 8: {
+                Inventory inv = Bukkit.createInventory(pl, 54, "狮首祭台 | §lCYCLE");
+                pl.openInventory(inv);
+            }
         }
     }
 
-    public void fillEmpty(Inventory inv) {
+    public static void fillEmpty(Inventory inv) {
         ItemStack glass = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1);
         ItemMeta meta = glass.getItemMeta();
         meta.setDisplayName(" ");

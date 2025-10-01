@@ -1,5 +1,6 @@
 package sudark.chestshop;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.command.BlockCommandSender;
@@ -15,7 +16,32 @@ public class Enchant implements CommandExecutor {
     public boolean onCommand(org.bukkit.command.CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
 
         if (cmd.getName().equalsIgnoreCase("enchants") && sender instanceof BlockCommandSender block) {
-            Player player = block.getBlock().getLocation().add(0.5, 2.0, 0.5).getNearbyPlayers(0.5).iterator().next();
+            Player player = block.getBlock().getLocation().add(0.5, 2.0, 0.5)
+                    .getNearbyPlayers(0.5).stream().findFirst().orElse(null);
+            if (player == null) return false;
+
+            if (args.length == 1) {
+                Location loc = player.getLocation();
+                float yaw = loc.getYaw();
+
+                double x = -Math.sin(Math.toRadians(yaw));
+                double z =  Math.cos(Math.toRadians(yaw));
+
+                loc.add(x * -2, 0, z * -2); // -2 表示向后两格
+                player.teleport(loc);
+
+                switch (Integer.parseInt(args[0])) {
+                    case 1 -> InitializeInventory.open(player, 1);
+                    case 2 -> InitializeInventory.open(player, 2);
+                    case 3 -> InitializeInventory.open(player, 3);
+                    case 4 -> InitializeInventory.open(player, 4);
+                    case 5 -> InitializeInventory.open(player, 5);
+                    case 6 -> InitializeInventory.open(player, 6);
+                    case 7 -> InitializeInventory.open(player, 7);
+                    case 8 -> InitializeInventory.open(player, 8);
+                }
+                return true;
+            }
 
             int purse = player.getLevel();
             int price = Integer.parseInt(args[2]);

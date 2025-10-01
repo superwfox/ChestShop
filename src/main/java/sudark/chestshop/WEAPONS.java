@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static sudark.chestshop.IntializeInventory.shopSetting3;
+import static sudark.chestshop.InitializeInventory.shopSetting3;
 
 public class WEAPONS {
     static List<ItemStack> WEAPONS = new ArrayList<>();
@@ -54,6 +54,14 @@ public class WEAPONS {
         WEAPONS.add(Golden(Material.NETHERITE_SHOVEL));
         WEAPONS.add(Golden(Material.NETHERITE_HOE));
 
+        ItemStack crossbow = new ItemStack(Material.CROSSBOW);
+        ItemMeta crossbowMeta = crossbow.getItemMeta();
+        crossbowMeta.setLore(List.of("§r§l§6错金加工 | GILDED"));
+        crossbowMeta.setUnbreakable(true);
+        crossbowMeta.addEnchant(Enchantment.INFINITY, 1, true);
+        crossbow.setItemMeta(crossbowMeta);
+
+
         ItemStack shield = new ItemStack(Material.SHIELD, 1);
         BlockStateMeta shieldMeta = (BlockStateMeta) shield.getItemMeta();
         shieldMeta.setUnbreakable(true);
@@ -73,13 +81,20 @@ public class WEAPONS {
         shield.setItemMeta(shieldMeta);
 
         WEAPONS.add(shield);
+        WEAPONS.add(crossbow);
     }
 
     static void UpdateItems() {
         List<ItemStack> tempWeapons = new ArrayList<>(WEAPONS);
         shopSetting3.clear();
+        ItemStack glass = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1);
+        ItemMeta meta = glass.getItemMeta();
+        meta.setDisplayName(" ");
+        glass.setItemMeta(meta);
+        shopSetting3.add(glass);
+        shopSetting3.add(glass);
         Random rand = new Random();
-        for (int i = 0; i < 5 && !tempWeapons.isEmpty(); i++) {
+        for (int i = 2; i < 7 && !tempWeapons.isEmpty(); i++) {
             int randomIndex = rand.nextInt(tempWeapons.size());
             shopSetting3.add(tempWeapons.get(randomIndex));
             tempWeapons.remove(randomIndex);

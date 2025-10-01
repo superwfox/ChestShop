@@ -1,50 +1,203 @@
 package sudark.chestshop;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.CommandBlock;
+import org.bukkit.block.Block;
+import org.bukkit.block.Container;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.*;
+
+import static sudark.chestshop.ChestShop.get;
+import static sudark.chestshop.ItemRarity.RARITY_MAP;
 
 public class ShopOpenEvent implements Listener {
+
+    static Map<Location, List<Location>> GoldMiner = new HashMap<>();
+    static Map<Location, Integer> GoldDig = new HashMap<>();
+
+    int dxyz[][] = {{0, 1, 0}, {1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}};
+
     @EventHandler
-    public void onShopOpen(PlayerInteractEvent e) {
+    public void onPlayerTouchWealth(PlayerToggleSneakEvent e) {
+
         Player pl = e.getPlayer();
-        if (!pl.getWorld().getName().equals("BEEF-Main")) return;
+        if (pl.isSneaking()) return;
 
-        if (e.getClickedBlock() == null) return;
+        Block bl = pl.getTargetBlock(null, 6);
+        if (bl.getType() != Material.NETHERITE_BLOCK) return;
 
-        if (pl.getGameMode().equals(GameMode.CREATIVE)) return;
+        Location loc = bl.getLocation();
 
-        Material bl = e.getClickedBlock().getType();
-
-        IntializeInventory in = new IntializeInventory();
-
-        switch (bl) {
-            case STONECUTTER -> in.open(pl, 1, e);
-            case BARREL -> in.open(pl, 2, e);
-            case BLAST_FURNACE -> in.open(pl, 3, e);
-            case STRIPPED_CHERRY_LOG -> in.open(pl, 4, e);
-            case YELLOW_WOOL -> in.open(pl, 5, e);
-            case YELLOW_CONCRETE_POWDER -> in.open(pl, 6, e);
-            case LOOM -> in.open(pl, 7, e);
-            case GILDED_BLACKSTONE -> {
-                pl.sendTitle("这只是个§e石头", "—————————————");
-                pl.damage(-1);
-                pl.playSound(pl, Sound.ENTITY_LINGERING_POTION_THROW, 1, 1);
-            }
-            case POLISHED_BASALT ->
-                Bukkit.dispatchCommand(
-                        e.getPlayer(),
-                        ((CommandBlock) e.getClickedBlock().getLocation().subtract(0, 1, 0).getBlock().getState()).getCommand()
-                );
+        //存了有效值就取出 否则继续
+        if (GoldDig.containsKey(loc) && GoldDig.get(loc) > 0) {
+            int levelPoints = GoldDig.get(loc);
+            pl.sendActionBar("[§e掘金§f] §f" + levelPoints + " 福禄");
+            pl.giveExp(levelPoints);
+            pl.playSound(pl, Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+            GoldDig.remove(loc);
+            return;
+        } else {
+            loc.getNearbyEntities(1, 2, 1).forEach(entity -> {
+                if (entity instanceof TextDisplay td) td.remove();
+            });
         }
 
+        //检查漏斗情况
+        List<Location> detect = new ArrayList<>();
+        for (int[] dxy : dxyz) {
+            Location nowLoc = loc.clone().add(dxy[0], dxy[1], dxy[2]);
+            if (nowLoc.getBlock().getType() == Material.HOPPER) {
+                detect.add(nowLoc);
+            }
+        }
 
+        if (detect.isEmpty()) {
+            pl.sendActionBar("[§e掘金§f] 没有任何连接它的漏斗");
+            return;
+        }
+
+        pl.sendActionBar("[§e掘金§f] 检测到 §a" + detect.size() + " §f个漏斗");
+        GoldMiner.put(loc, detect);
+
+        if (!GoldDig.containsKey(loc)) createTask(loc);
+    }
+
+    public static void createTask(Location oriLoc) {
+
+        oriLoc.getNearbyEntities(1, 2, 1).forEach(entity -> {
+            if (entity instanceof TextDisplay td) td.remove();
+            // if (entity instanceof ItemDisplay id) id.remove();
+        });
+        TextDisplay td = oriLoc.getWorld().spawn(oriLoc.clone().add(0.5, 1.5, 0.5), TextDisplay.class);
+        td.setSeeThrough(false);
+        td.setBillboard(TextDisplay.Billboard.VERTICAL);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                List<Location> hoppers = GoldMiner.get(oriLoc);
+                if (hoppers == null || hoppers.isEmpty()) {
+                    GoldMiner.remove(oriLoc);
+                    cancel();
+                    return;
+                }
+
+                if (oriLoc.getBlock().getType() != Material.NETHERITE_BLOCK) {
+                    GoldMiner.remove(oriLoc);
+                    GoldDig.remove(oriLoc);
+                    oriLoc.getNearbyEntities(1, 2, 1).forEach(entity -> {
+                        if (entity instanceof TextDisplay td) td.remove();
+                    });
+                    cancel();
+                }
+
+                List<Location> toRemove = new ArrayList<>();
+                for (Location loc : hoppers) {
+                    if (loc.getBlock().getType() == Material.HOPPER) {
+                        GoldDig.merge(oriLoc, getValue(loc), Integer::sum);
+                    } else {
+                        toRemove.add(loc);
+                    }
+                }
+                hoppers.removeAll(toRemove);
+
+                oriLoc.getNearbyEntities(1, 2, 1).forEach(entity -> {
+                    if (entity instanceof TextDisplay td) td.setText("§e§lM : " + GoldDig.getOrDefault(oriLoc, 0));
+                });
+
+                if (hoppers.isEmpty()) {
+                    GoldMiner.remove(oriLoc);
+                    cancel();
+                }
+            }
+        }.runTaskTimer(get(), 0, 4L);
+    }
+
+
+    public static int getValue(Location loc) {
+        Block block = loc.getBlock();
+        int value = 0;
+        if (block.getState() instanceof Container container) {
+            Inventory inv = container.getInventory();
+
+            for (ItemStack item : inv.getContents()) {
+                if (item == null || item.getType().isAir()) continue;
+
+                ItemRarity.Rarity rarity = RARITY_MAP.getOrDefault(item.getType(), ItemRarity.Rarity.COMMON);
+                int c = switch (rarity) {
+                    case COMMON -> 1;
+                    case UNCOMMON -> 3;
+                    case RARE -> 9;
+                    case EPIC -> 27;
+                    case EXTRAORDINARY -> 81;
+                };
+
+                value += c * item.getAmount();
+            }
+
+            inv.clear();
+        }
+        return value;
+    }
+
+    @EventHandler
+    public void onShopOpen(PlayerToggleSneakEvent e) {
+        Player pl = e.getPlayer();
+        Material material = pl.getItemInHand().getType();
+
+        if (!material.equals(Material.GOLD_INGOT)) return;
+        if (pl.isSneaking()) {
+            pl.openInventory(getInventory(pl));
+            pl.sendMessage("[§e口袋商店§f] 多买东西和老板搞好关系解锁对应店铺");
+        }
+
+    }
+
+    Inventory getInventory(Player pl) {
+        Inventory inv = Bukkit.createInventory(pl, 9, "口袋商店 | §lMobileShop");
+
+        ItemStack STONECUTTER = shop(Material.STONECUTTER, "§r§e建材铺");
+        ItemStack BARREL = shop(Material.BARREL, "§r§e农贸商");
+        ItemStack BLAST_FURNACE = shop(Material.BLAST_FURNACE, "§r§e铁匠铺");
+        ItemStack STRIPPED_CHERRY_LOG = shop(Material.STRIPPED_CHERRY_LOG, "§r§e木料铺");
+        ItemStack YELLOW_WOOL = shop(Material.YELLOW_WOOL, "§r§e羊毛铺");
+        ItemStack YELLOW_CONCRETE_POWDER = shop(Material.YELLOW_CONCRETE_POWDER, "§r§e混凝土铺");
+        ItemStack LOOM = shop(Material.LOOM, "§r§e染坊");
+        ItemStack PIGLIN_BRUTE_SPAWN_EGG = shop(Material.PIGLIN_BRUTE_SPAWN_EGG, "§r§e猪人小铺");
+
+        if (capableToOpen(pl, 1)) inv.addItem(STONECUTTER);
+        if (capableToOpen(pl, 2)) inv.addItem(BARREL);
+        if (capableToOpen(pl, 3)) inv.addItem(BLAST_FURNACE);
+        if (capableToOpen(pl, 4)) inv.addItem(STRIPPED_CHERRY_LOG);
+        if (capableToOpen(pl, 5)) inv.addItem(YELLOW_WOOL);
+        if (capableToOpen(pl, 6)) inv.addItem(YELLOW_CONCRETE_POWDER);
+        if (capableToOpen(pl, 7)) inv.addItem(LOOM);
+        inv.addItem(PIGLIN_BRUTE_SPAWN_EGG);
+        return inv;
+    }
+
+    ItemStack shop(Material m, String name) {
+        ItemStack item = new ItemStack(m);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    Boolean capableToOpen(Player pl, int num) {
+        return pl.getScoreboard().getObjective("SHOP_" + num).getScore(pl).getScore() > 50;
     }
 }
