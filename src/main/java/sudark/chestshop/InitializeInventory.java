@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class InitializeInventory {
@@ -108,7 +109,6 @@ public class InitializeInventory {
             new ItemStack(Material.CHERRY_LEAVES, 8),
             new ItemStack(Material.MANGROVE_LEAVES, 8),
             new ItemStack(Material.BIRCH_LEAVES, 8)
-
     };
 
     static ItemStack[] shopSetting5 = {
@@ -180,9 +180,23 @@ public class InitializeInventory {
                 pl.openInventory(inv);
                 break;
             }
+            case 21: {
+                Inventory inv = Bukkit.createInventory(pl, 27, "建材铺 PRO | §lMobileShop");
+                inv.setContents(expendSize(shopSetting1));
+                fillEmpty(inv);
+                pl.openInventory(inv);
+                break;
+            }
             case 2: {
                 Inventory inv = Bukkit.createInventory(pl, 27, "农贸商 | §lARBORS");
                 inv.setContents(shopSetting2);
+                fillEmpty(inv);
+                pl.openInventory(inv);
+                break;
+            }
+            case 22: {
+                Inventory inv = Bukkit.createInventory(pl, 27, "农贸商 PRO | §lARBORS");
+                inv.setContents(expendSize(shopSetting2));
                 fillEmpty(inv);
                 pl.openInventory(inv);
                 break;
@@ -195,8 +209,15 @@ public class InitializeInventory {
                 break;
             }
             case 4: {
-                Inventory inv = Bukkit.createInventory(pl, 18, "木料铺 | §lWOODS");
+                Inventory inv = Bukkit.createInventory(pl, 27, "木料铺 | §lWOODS");
                 inv.setContents(shopSetting4);
+                fillEmpty(inv);
+                pl.openInventory(inv);
+                break;
+            }
+            case 24: {
+                Inventory inv = Bukkit.createInventory(pl, 27, "木料铺 PRO | §lWOODS");
+                inv.setContents(expendSize(shopSetting4));
                 fillEmpty(inv);
                 pl.openInventory(inv);
                 break;
@@ -208,9 +229,23 @@ public class InitializeInventory {
                 pl.openInventory(inv);
                 break;
             }
+            case 25: {
+                Inventory inv = Bukkit.createInventory(pl, 18, "羊毛铺 PRO | §lWOOL");
+                inv.setContents(expendSize(shopSetting5));
+                fillEmpty(inv);
+                pl.openInventory(inv);
+                break;
+            }
             case 6: {
                 Inventory inv = Bukkit.createInventory(pl, 18, "混凝土坊 | §lCONCRETE");
                 inv.setContents(shopSetting6);
+                fillEmpty(inv);
+                pl.openInventory(inv);
+                break;
+            }
+            case 26: {
+                Inventory inv = Bukkit.createInventory(pl, 18, "混凝土坊 PRO | §lCONCRETE");
+                inv.setContents(expendSize(shopSetting6));
                 fillEmpty(inv);
                 pl.openInventory(inv);
                 break;
@@ -227,6 +262,18 @@ public class InitializeInventory {
                 pl.openInventory(inv);
             }
         }
+    }
+
+    public static ItemStack[] expendSize(ItemStack[] list) {
+        ItemStack[] modified = Arrays.stream(list).map(item -> {
+            if (item == null) return null;
+            ItemStack copy = item.clone(); // 克隆避免修改原物品
+            ItemMeta meta = copy.getItemMeta();
+            copy.setLore(List.of("x128"));
+            copy.setItemMeta(meta);
+            return copy;
+        }).toArray(ItemStack[]::new);
+        return modified;
     }
 
     public static void fillEmpty(Inventory inv) {

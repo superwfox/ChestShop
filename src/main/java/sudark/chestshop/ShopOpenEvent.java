@@ -11,14 +11,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Transformation;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static sudark.chestshop.ChestShop.get;
 import static sudark.chestshop.ItemRarity.RARITY_MAP;
@@ -27,6 +30,12 @@ public class ShopOpenEvent implements Listener {
 
     static Map<Location, List<Location>> GoldMiner = new HashMap<>();
     static Map<Location, Integer> GoldDig = new HashMap<>();
+    static Transformation turn = new Transformation(
+            new Vector3f(0f, -0.5f, 0f),            // 平移
+            new Quaternionf().rotateX((float) Math.toRadians(90)), // 绕X轴旋转90°
+            new Vector3f(0.85f, 1f, 0.75f),                    // 缩放
+            new Quaternionf()
+    );
 
     int dxyz[][] = {{0, 1, 0}, {1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}};
 
@@ -36,15 +45,15 @@ public class ShopOpenEvent implements Listener {
         Player pl = e.getPlayer();
         if (pl.isSneaking()) return;
 
-        Block bl = pl.getTargetBlock(null, 6);
-        if (bl.getType() != Material.NETHERITE_BLOCK) return;
+        Block bl = pl.getTargetBlockExact(6);
+        if (bl == null || bl.getType() != Material.NETHERITE_BLOCK) return;
 
         Location loc = bl.getLocation();
 
         //存了有效值就取出 否则继续
         if (GoldDig.containsKey(loc) && GoldDig.get(loc) > 0) {
             int levelPoints = GoldDig.get(loc);
-            pl.sendActionBar("[§e掘金§f] §f" + levelPoints + " 福禄");
+            pl.sendActionBar("[§e掘金§f] §f" + levelPoints + " §b福禄");
             pl.giveExp(levelPoints);
             pl.playSound(pl, Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
             GoldDig.remove(loc);
@@ -52,6 +61,7 @@ public class ShopOpenEvent implements Listener {
         } else {
             loc.getNearbyEntities(1, 2, 1).forEach(entity -> {
                 if (entity instanceof TextDisplay td) td.remove();
+                if (entity instanceof ItemDisplay id) id.remove();
             });
         }
 
@@ -69,21 +79,15 @@ public class ShopOpenEvent implements Listener {
             return;
         }
 
-        pl.sendActionBar("[§e掘金§f] 检测到 §a" + detect.size() + " §f个漏斗");
+        pl.sendActionBar("[§e掘金§f] 检测到 §b" + detect.size() + " §f个漏斗");
         GoldMiner.put(loc, detect);
 
-        if (!GoldDig.containsKey(loc)) createTask(loc);
+        if (!GoldDig.containsKey(loc) || GoldDig.get(loc) == 0) createTask(loc);
     }
 
     public static void createTask(Location oriLoc) {
 
-        oriLoc.getNearbyEntities(1, 2, 1).forEach(entity -> {
-            if (entity instanceof TextDisplay td) td.remove();
-            // if (entity instanceof ItemDisplay id) id.remove();
-        });
-        TextDisplay td = oriLoc.getWorld().spawn(oriLoc.clone().add(0.5, 1.5, 0.5), TextDisplay.class);
-        td.setSeeThrough(false);
-        td.setBillboard(TextDisplay.Billboard.VERTICAL);
+        loadDisplay(oriLoc);
 
         new BukkitRunnable() {
             @Override
@@ -100,8 +104,10 @@ public class ShopOpenEvent implements Listener {
                     GoldDig.remove(oriLoc);
                     oriLoc.getNearbyEntities(1, 2, 1).forEach(entity -> {
                         if (entity instanceof TextDisplay td) td.remove();
+                        if (entity instanceof ItemDisplay id) id.remove();
                     });
                     cancel();
+                    return;
                 }
 
                 List<Location> toRemove = new ArrayList<>();
@@ -114,9 +120,17 @@ public class ShopOpenEvent implements Listener {
                 }
                 hoppers.removeAll(toRemove);
 
+                AtomicBoolean exist = new AtomicBoolean(false);
                 oriLoc.getNearbyEntities(1, 2, 1).forEach(entity -> {
-                    if (entity instanceof TextDisplay td) td.setText("§e§lM : " + GoldDig.getOrDefault(oriLoc, 0));
+                    if (entity instanceof TextDisplay td) {
+                        exist.set(true);
+                        td.setText("§e§lM : " + GoldDig.getOrDefault(oriLoc, 0));
+                    }
                 });
+
+                if (!exist.get()) {
+                    loadDisplay(oriLoc);
+                }
 
                 if (hoppers.isEmpty()) {
                     GoldMiner.remove(oriLoc);
@@ -126,6 +140,22 @@ public class ShopOpenEvent implements Listener {
         }.runTaskTimer(get(), 0, 4L);
     }
 
+    public static void loadDisplay(Location loc) {
+        loc.getNearbyEntities(1, 2, 1).forEach(entity -> {
+            if (entity instanceof TextDisplay td) td.remove();
+            if (entity instanceof ItemDisplay id) id.remove();
+        });
+
+        TextDisplay td = loc.getWorld().spawn(loc.clone().add(0.5, 1.5, 0.5), TextDisplay.class);
+        td.setSeeThrough(false);
+        td.setBillboard(TextDisplay.Billboard.VERTICAL);
+        td.setText("§e§lM : " + GoldDig.getOrDefault(loc, 0));
+
+        ItemDisplay id = loc.getWorld().spawn(loc.clone().add(0.5, 1.5, 0.5), ItemDisplay.class);
+        id.setItemStack(new ItemStack(Material.GOLD_INGOT));
+        id.setTransformation(turn);
+
+    }
 
     public static int getValue(Location loc) {
         Block block = loc.getBlock();
@@ -158,13 +188,42 @@ public class ShopOpenEvent implements Listener {
         Player pl = e.getPlayer();
         Material material = pl.getItemInHand().getType();
 
-        if (!material.equals(Material.GOLD_INGOT)) return;
-        if (pl.isSneaking()) {
-            pl.openInventory(getInventory(pl));
-            pl.sendMessage("[§e口袋商店§f] 多买东西和老板搞好关系解锁对应店铺");
+        if (material.equals(Material.GOLD_INGOT)) {
+            if (pl.isSneaking()) {
+                pl.openInventory(getInventory(pl));
+                pl.sendMessage("[§e口袋商店§f] 多买东西和老板搞好关系解锁对应店铺");
+            }
+        }
+
+        if (material.equals(Material.NETHERITE_INGOT)) {
+            if (pl.isSneaking()) {
+                pl.openInventory(getAdvancedInventory(pl));
+                pl.sendMessage("[§e口袋商店§f] 多买东西和老板搞好关系解锁对应店铺");
+            }
         }
 
     }
+
+    Inventory getAdvancedInventory(Player pl) {
+        Inventory inv = Bukkit.createInventory(pl, 9, "口袋商铺 | §lMobileShop");
+
+        ItemStack STONECUTTER = shop(Material.STONECUTTER, "§r§e建材铺");
+        ItemStack BARREL = shop(Material.BARREL, "§r§e农贸商");
+        ItemStack STRIPPED_CHERRY_LOG = shop(Material.STRIPPED_CHERRY_LOG, "§r§e木料铺");
+        ItemStack YELLOW_WOOL = shop(Material.YELLOW_WOOL, "§r§e羊毛铺");
+        ItemStack YELLOW_CONCRETE_POWDER = shop(Material.YELLOW_CONCRETE_POWDER, "§r§e混凝土铺");
+        ItemStack LOOM = shop(Material.LOOM, "§r§e染坊");
+
+        if (capableToOpen(pl, 1)) inv.addItem(STONECUTTER);
+        if (capableToOpen(pl, 2)) inv.addItem(BARREL);
+        if (capableToOpen(pl, 4)) inv.addItem(STRIPPED_CHERRY_LOG);
+        if (capableToOpen(pl, 5)) inv.addItem(YELLOW_WOOL);
+        if (capableToOpen(pl, 6)) inv.addItem(YELLOW_CONCRETE_POWDER);
+        if (capableToOpen(pl, 7)) inv.addItem(LOOM);
+        return inv;
+    }
+
+
 
     Inventory getInventory(Player pl) {
         Inventory inv = Bukkit.createInventory(pl, 9, "口袋商店 | §lMobileShop");

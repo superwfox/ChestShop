@@ -88,13 +88,9 @@ public class ItemRarity {
         RARITY_MAP.put(Material.RESPAWN_ANCHOR, Rarity.RARE);
         RARITY_MAP.put(Material.BUDDING_AMETHYST, Rarity.RARE);
         RARITY_MAP.put(Material.DEEPSLATE_EMERALD_ORE, Rarity.RARE); // 极难生成
-        RARITY_MAP.put(Material.FROGSPAWN, Rarity.RARE);
         RARITY_MAP.put(Material.MANGROVE_PROPAGULE, Rarity.RARE);
         RARITY_MAP.put(Material.SCULK_SENSOR, Rarity.RARE);
         RARITY_MAP.put(Material.REINFORCED_DEEPSLATE, Rarity.RARE);
-        RARITY_MAP.put(Material.PEARLESCENT_FROGLIGHT, Rarity.RARE);
-        RARITY_MAP.put(Material.VERDANT_FROGLIGHT, Rarity.RARE);
-        RARITY_MAP.put(Material.OCHRE_FROGLIGHT, Rarity.RARE);
         RARITY_MAP.put(Material.MUSIC_DISC_5, Rarity.RARE);
         RARITY_MAP.put(Material.MUSIC_DISC_OTHERSIDE, Rarity.RARE);
         RARITY_MAP.put(Material.SCULK_CATALYST, Rarity.RARE);

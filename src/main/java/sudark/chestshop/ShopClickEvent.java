@@ -83,12 +83,25 @@ public class ShopClickEvent implements Listener {
             return;
         }
 
+        if (name.equals("口袋商铺 | §lMobileShop")) {
+            e.setCancelled(true);
+            InitializeInventory in = new InitializeInventory();
+            switch (good.getType()) {
+                case STONECUTTER -> in.open(pl, 21);
+                case BARREL -> in.open(pl, 22);
+                case STRIPPED_CHERRY_LOG -> in.open(pl, 24);
+                case YELLOW_WOOL -> in.open(pl, 25);
+                case YELLOW_CONCRETE_POWDER -> in.open(pl, 26);
+            }
+            return;
+        }
+
         if (name.equals("建材铺 | §lBLOCKS")) {
+            e.setCancelled(true);
+
             if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                e.setCancelled(true);
                 return;
             }
-            e.setCancelled(true);
 
             if (pl.getLevel() < 1) {
                 cancel(pl);
@@ -99,12 +112,27 @@ public class ShopClickEvent implements Listener {
             return;
         }
 
-        if (name.equals("农贸商 | §lARBORS")) {
+        if (name.equals("建材铺 PRO | §lBLOCKS")) {
+            e.setCancelled(true);
+
             if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                e.setCancelled(true);
                 return;
             }
+
+            if (pl.getLevel() < 128) {
+                cancel(pl);
+                return;
+            }
+            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
+            return;
+        }
+
+        if (name.equals("农贸商 | §lARBORS")) {
             e.setCancelled(true);
+
+            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+                return;
+            }
 
             if (pl.getLevel() < 1) {
                 cancel(pl);
@@ -112,6 +140,21 @@ public class ShopClickEvent implements Listener {
             }
             beWell(pl, 2);
             order(pl, 1, good, Sound.ENTITY_WANDERING_TRADER_YES);
+            return;
+        }
+
+        if (name.equals("农贸商 PRO | §lARBORS")) {
+            e.setCancelled(true);
+
+            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+                return;
+            }
+
+            if (pl.getLevel() < 128) {
+                cancel(pl);
+                return;
+            }
+            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
             return;
         }
 
@@ -147,6 +190,21 @@ public class ShopClickEvent implements Listener {
             return;
         }
 
+        if (name.equals("木料铺 PRO | §lWOODS")) {
+            e.setCancelled(true);
+
+            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+                return;
+            }
+
+            if (pl.getLevel() < 128) {
+                cancel(pl);
+                return;
+            }
+            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
+            return;
+        }
+
         if (name.equals("羊毛铺 | §lWOOL")) {
             if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
                 e.setCancelled(true);
@@ -163,6 +221,21 @@ public class ShopClickEvent implements Listener {
             return;
         }
 
+        if (name.equals("羊毛铺 PRO | §lWOOL")) {
+            e.setCancelled(true);
+
+            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+                return;
+            }
+
+            if (pl.getLevel() < 128) {
+                cancel(pl);
+                return;
+            }
+            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
+            return;
+        }
+
         if (name.equals("混凝土坊 | §lCONCRETE")) {
             if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
                 e.setCancelled(true);
@@ -176,6 +249,21 @@ public class ShopClickEvent implements Listener {
             }
             beWell(pl, 6);
             order(pl, 1, good, Sound.BLOCK_SAND_HIT);
+            return;
+        }
+
+        if (name.equals("混凝土坊 PRO | §lCONCRETE")) {
+            e.setCancelled(true);
+
+            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+                return;
+            }
+
+            if (pl.getLevel() < 128) {
+                cancel(pl);
+                return;
+            }
+            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
             return;
         }
 
