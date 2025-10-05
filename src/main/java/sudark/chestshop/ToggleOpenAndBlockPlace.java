@@ -1,9 +1,7 @@
 package sudark.chestshop;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import io.papermc.paper.event.player.PlayerPickItemEvent;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.entity.ItemDisplay;
@@ -11,10 +9,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Transformation;
 import org.joml.Quaternionf;
@@ -23,10 +27,12 @@ import org.joml.Vector3f;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static sudark.chestshop.ChestShop.amountKey;
 import static sudark.chestshop.ChestShop.get;
+import static sudark.chestshop.InitializeInventory.*;
 import static sudark.chestshop.ItemRarity.RARITY_MAP;
 
-public class ShopOpenEvent implements Listener {
+public class ToggleOpenAndBlockPlace implements Listener {
 
     static Map<Location, List<Location>> GoldMiner = new HashMap<>();
     static Map<Location, Integer> GoldDig = new HashMap<>();
@@ -183,6 +189,67 @@ public class ShopOpenEvent implements Listener {
         return value;
     }
 
+    //选取购买专用
+    List<ItemStack[]> shops = Arrays.asList(
+            shopSetting1,
+            shopSetting4,
+            shopSetting5,
+            shopSetting6,
+            shopSetting7
+    );
+
+    @EventHandler
+    public void onPick(PlayerPickItemEvent e) {
+        Player pl = e.getPlayer();
+        Block bl = pl.getTargetBlockExact(7, FluidCollisionMode.NEVER);
+        Material src = bl.getType();
+        ItemStack own;
+
+        PlayerInventory inv = pl.getInventory();
+
+        int slot = findMatchingSlot(pl, src, inv);
+        if (slot != -1) {
+            own = pl.getInventory().getItem(slot);
+            ItemStack hand = pl.getInventory().getItemInMainHand();
+
+            // 取消原事件，防止 Paper 自动切换
+            e.setCancelled(true);
+            inv.setItem(slot, hand);
+            pl.getInventory().setItemInMainHand(own);
+
+            return;
+        }
+
+        for (ItemStack[] shop : shops) {
+            for (int i = 0; i < shop.length; i++) {
+                if (bl.getType().equals(shop[i].getType())) {
+                    ItemStack item = shop[i];
+
+                    if (pl.getLevel() < 1) {
+                        pl.sendMessage("[§e口袋商店§f] 等级不足!");
+                        return;
+                    }
+
+                    if (pl.getInventory().contains(item.getType(), 32)) return;
+                    pl.playSound(pl, Sound.ENTITY_VILLAGER_TRADE, 1, 1);
+                    pl.sendActionBar("[§e口袋商店§f] §b" + item.getType() + " §f:§e " + item.getAmount());
+                    pl.giveExpLevels(-2);
+                    pl.getInventory().addItem(item);
+                    return;
+                }
+            }
+        }
+    }
+
+    private int findMatchingSlot(Player pl, Material type, Inventory inv) {
+        for (int i = 0; i < 36; i++) {
+            ItemStack item = inv.getItem(i);
+            if (item != null && item.getType() == type)
+                return i;
+        }
+        return -1;
+    }
+
     @EventHandler
     public void onShopOpen(PlayerToggleSneakEvent e) {
         Player pl = e.getPlayer();
@@ -198,10 +265,54 @@ public class ShopOpenEvent implements Listener {
         if (material.equals(Material.NETHERITE_INGOT)) {
             if (pl.isSneaking()) {
                 pl.openInventory(getAdvancedInventory(pl));
-                pl.sendMessage("[§e口袋商店§f] 多买东西和老板搞好关系解锁对应店铺");
             }
         }
 
+    }
+
+    @EventHandler
+    public void onPlayerHandBlock(BlockPlaceEvent event) {
+        ItemStack item = event.getItemInHand();
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+
+        if (!pdc.has(amountKey, PersistentDataType.INTEGER)) return;
+
+        int amount = pdc.getOrDefault(amountKey, PersistentDataType.INTEGER, 0);
+        if (amount > 0) {
+            item.setAmount(1);
+            pdc.set(amountKey, PersistentDataType.INTEGER, amount - 1);
+            meta.setLore(List.of("§7+" + (amount - 1)));
+            event.getPlayer().sendActionBar("§7§l" + (amount - 1));
+            item.setItemMeta(meta);
+        } else {
+            pdc.remove(amountKey);
+            item.setItemMeta(meta);
+        }
+
+    }
+
+    @EventHandler
+    public void onEat(PlayerItemConsumeEvent e) {
+        Player p = e.getPlayer();
+        ItemStack item = e.getItem();
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+
+        if (!pdc.has(amountKey, PersistentDataType.INTEGER)) return;
+
+        int amount = pdc.getOrDefault(amountKey, PersistentDataType.INTEGER, 0);
+        if (amount > 0) {
+            item.setAmount(1);
+            pdc.set(amountKey, PersistentDataType.INTEGER, amount - 1);
+            meta.setLore(List.of("§7+" + (amount - 1)));
+            p.sendActionBar("§7§l" + (amount - 1));
+            item.setItemMeta(meta);
+            p.setItemInHand(item);
+        } else {
+            pdc.remove(amountKey);
+            item.setItemMeta(meta);
+        }
     }
 
     Inventory getAdvancedInventory(Player pl) {
@@ -210,8 +321,8 @@ public class ShopOpenEvent implements Listener {
         ItemStack STONECUTTER = shop(Material.STONECUTTER, "§r§e建材铺");
         ItemStack BARREL = shop(Material.BARREL, "§r§e农贸商");
         ItemStack STRIPPED_CHERRY_LOG = shop(Material.STRIPPED_CHERRY_LOG, "§r§e木料铺");
-        ItemStack YELLOW_WOOL = shop(Material.YELLOW_WOOL, "§r§e羊毛铺");
-        ItemStack YELLOW_CONCRETE_POWDER = shop(Material.YELLOW_CONCRETE_POWDER, "§r§e混凝土铺");
+        ItemStack YELLOW_WOOL = shop(Material.SANDSTONE_WALL, "§r§e加工铺");
+        ItemStack YELLOW_CONCRETE_POWDER = shop(Material.YELLOW_CONCRETE_POWDER, "§r§e土坊");
         ItemStack LOOM = shop(Material.LOOM, "§r§e染坊");
 
         if (capableToOpen(pl, 1)) inv.addItem(STONECUTTER);
@@ -223,8 +334,6 @@ public class ShopOpenEvent implements Listener {
         return inv;
     }
 
-
-
     Inventory getInventory(Player pl) {
         Inventory inv = Bukkit.createInventory(pl, 9, "口袋商店 | §lMobileShop");
 
@@ -232,8 +341,8 @@ public class ShopOpenEvent implements Listener {
         ItemStack BARREL = shop(Material.BARREL, "§r§e农贸商");
         ItemStack BLAST_FURNACE = shop(Material.BLAST_FURNACE, "§r§e铁匠铺");
         ItemStack STRIPPED_CHERRY_LOG = shop(Material.STRIPPED_CHERRY_LOG, "§r§e木料铺");
-        ItemStack YELLOW_WOOL = shop(Material.YELLOW_WOOL, "§r§e羊毛铺");
-        ItemStack YELLOW_CONCRETE_POWDER = shop(Material.YELLOW_CONCRETE_POWDER, "§r§e混凝土铺");
+        ItemStack YELLOW_WOOL = shop(Material.SANDSTONE_WALL, "§r§e加工铺");
+        ItemStack YELLOW_CONCRETE_POWDER = shop(Material.YELLOW_CONCRETE_POWDER, "§r§e土坊");
         ItemStack LOOM = shop(Material.LOOM, "§r§e染坊");
         ItemStack PIGLIN_BRUTE_SPAWN_EGG = shop(Material.PIGLIN_BRUTE_SPAWN_EGG, "§r§e猪人小铺");
 

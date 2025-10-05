@@ -1,10 +1,7 @@
 package sudark.chestshop;
 
-import io.papermc.paper.event.player.PlayerPickItemEvent;
-import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
 import org.bukkit.entity.Player;
@@ -15,273 +12,120 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scoreboard.Score;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
 
 import static sudark.chestshop.InitializeInventory.*;
 
 public class ShopClickEvent implements Listener {
 
     @EventHandler
-    public void onItemPick(PlayerPickItemEvent e) {
-        Player pl = e.getPlayer();
-        Block bl = pl.getTargetBlockExact(10, FluidCollisionMode.NEVER);
-
-        if (bl == null) return;
-
-        List<ItemStack[]> shops = Arrays.asList(
-                shopSetting1,
-                shopSetting4,
-                shopSetting5,
-                shopSetting6
-        );
-
-        for (ItemStack[] shop : shops) {
-            for (int i = 0; i < shop.length; i++) {
-                if (bl.getType().equals(shop[i].getType())) {
-                    ItemStack item = shop[i];
-
-                    if (pl.getLevel() < 1) {
-                        pl.sendMessage("[§e口袋商店§f] 等级不足!");
-                        return;
-                    }
-
-                    if (pl.getInventory().contains(item.getType(), 32)) return;
-                    pl.playSound(pl, Sound.ENTITY_VILLAGER_TRADE, 1, 1);
-                    pl.sendActionBar("[§e口袋商店§f] §b" + item.getType() + " §f:§e " + item.getAmount());
-                    pl.giveExpLevels(-2);
-                    pl.getInventory().addItem(item);
-                    return;
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void onShopClick(InventoryClickEvent e) {
-
+    public void onInventoryClick(InventoryClickEvent e) {
         if (e.getClickedInventory() instanceof PlayerInventory) return;
 
-        if (e.getCurrentItem() == null) return;
-        String name = e.getView().getTitle();
         Player pl = (Player) e.getWhoClicked();
         ItemStack good = e.getCurrentItem();
+        if (good == null) return;
 
-        if (name.equals("口袋商店 | §lMobileShop")) {
+        String name = e.getView().getTitle();
+
+        // 统一判断是否点击了玻璃板
+        if (good.getType() == Material.LIGHT_GRAY_STAINED_GLASS_PANE) {
             e.setCancelled(true);
-            InitializeInventory in = new InitializeInventory();
-            switch (good.getType()) {
-                case STONECUTTER -> in.open(pl, 1);
-                case BARREL -> in.open(pl, 2);
-                case BLAST_FURNACE -> in.open(pl, 3);
-                case STRIPPED_CHERRY_LOG -> in.open(pl, 4);
-                case YELLOW_WOOL -> in.open(pl, 5);
-                case YELLOW_CONCRETE_POWDER -> in.open(pl, 6);
-                case LOOM -> in.open(pl, 7);
-                case PIGLIN_BRUTE_SPAWN_EGG -> in.open(pl, 8);
-            }
             return;
         }
 
-        if (name.equals("口袋商铺 | §lMobileShop")) {
-            e.setCancelled(true);
-            InitializeInventory in = new InitializeInventory();
-            switch (good.getType()) {
-                case STONECUTTER -> in.open(pl, 21);
-                case BARREL -> in.open(pl, 22);
-                case STRIPPED_CHERRY_LOG -> in.open(pl, 24);
-                case YELLOW_WOOL -> in.open(pl, 25);
-                case YELLOW_CONCRETE_POWDER -> in.open(pl, 26);
-            }
-            return;
-        }
-
-        if (name.equals("建材铺 | §lBLOCKS")) {
-            e.setCancelled(true);
-
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                return;
-            }
-
-            if (pl.getLevel() < 1) {
-                cancel(pl);
-                return;
-            }
-            beWell(pl, 1);
-            order(pl, 1, good, Sound.BLOCK_BONE_BLOCK_BREAK);
-            return;
-        }
-
-        if (name.equals("建材铺 PRO | §lBLOCKS")) {
-            e.setCancelled(true);
-
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                return;
-            }
-
-            if (pl.getLevel() < 128) {
-                cancel(pl);
-                return;
-            }
-            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
-            return;
-        }
-
-        if (name.equals("农贸商 | §lARBORS")) {
-            e.setCancelled(true);
-
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                return;
-            }
-
-            if (pl.getLevel() < 1) {
-                cancel(pl);
-                return;
-            }
-            beWell(pl, 2);
-            order(pl, 1, good, Sound.ENTITY_WANDERING_TRADER_YES);
-            return;
-        }
-
-        if (name.equals("农贸商 PRO | §lARBORS")) {
-            e.setCancelled(true);
-
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                return;
-            }
-
-            if (pl.getLevel() < 128) {
-                cancel(pl);
-                return;
-            }
-            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
-            return;
-        }
-
-        if (name.equals("铁匠铺 | §lHANDTOOLS")) {
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+// 只处理特定商店界面
+        switch (name) {
+            case "口袋商店 | §lMobileShop" -> {
                 e.setCancelled(true);
-                return;
+                handleMobileShop(pl, good);
             }
-            e.setCancelled(true);
-
-            if (pl.getLevel() < 50) {
-                cancel(pl);
-                return;
-            }
-            beWell(pl, 3);
-            order(pl, 50, good, Sound.BLOCK_ANVIL_BREAK);
-            return;
-        }
-
-        if (name.equals("木料铺 | §lWOODS")) {
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+            case "口袋商铺 | §lMobileShop" -> {
                 e.setCancelled(true);
-                return;
+                handleMobileSuperMarket(pl, good);
             }
-            e.setCancelled(true);
-
-            if (pl.getLevel() < 1) {
-                cancel(pl);
-                return;
-            }
-            beWell(pl, 4);
-            order(pl, 1, good, Sound.BLOCK_NETHER_GOLD_ORE_PLACE);
-            return;
-        }
-
-        if (name.equals("木料铺 PRO | §lWOODS")) {
-            e.setCancelled(true);
-
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                return;
-            }
-
-            if (pl.getLevel() < 128) {
-                cancel(pl);
-                return;
-            }
-            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
-            return;
-        }
-
-        if (name.equals("羊毛铺 | §lWOOL")) {
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+            case shop1Name -> {
                 e.setCancelled(true);
-                return;
+                handleShop(pl, good, 1, 1, Sound.BLOCK_BONE_BLOCK_BREAK);
             }
-            e.setCancelled(true);
-
-            if (pl.getLevel() < 1) {
-                cancel(pl);
-                return;
-            }
-            beWell(pl, 5);
-            order(pl, 1, good, Sound.BLOCK_WOOL_PLACE);
-            return;
-        }
-
-        if (name.equals("羊毛铺 PRO | §lWOOL")) {
-            e.setCancelled(true);
-
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                return;
-            }
-
-            if (pl.getLevel() < 128) {
-                cancel(pl);
-                return;
-            }
-            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
-            return;
-        }
-
-        if (name.equals("混凝土坊 | §lCONCRETE")) {
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+            case shop1NamePro, shop2NamePro, shop4NamePro, shop5NamePro, shop6NamePro, shop7NamePro -> {
                 e.setCancelled(true);
-                return;
+                handleShop(pl, good, 128, -1, Sound.BLOCK_BONE_BLOCK_BREAK);
             }
-            e.setCancelled(true);
-
-            if (pl.getLevel() < 1) {
-                cancel(pl);
-                return;
-            }
-            beWell(pl, 6);
-            order(pl, 1, good, Sound.BLOCK_SAND_HIT);
-            return;
-        }
-
-        if (name.equals("混凝土坊 PRO | §lCONCRETE")) {
-            e.setCancelled(true);
-
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
-                return;
-            }
-
-            if (pl.getLevel() < 128) {
-                cancel(pl);
-                return;
-            }
-            order(pl, 128, good, Sound.BLOCK_BONE_BLOCK_BREAK);
-            return;
-        }
-
-        if (name.equals("染坊 | §lDYE")) {
-            if (e.getCurrentItem().getType().equals(Material.LIGHT_GRAY_STAINED_GLASS_PANE)) {
+            case shop2Name -> {
                 e.setCancelled(true);
-                return;
+                handleShop(pl, good, 1, 2, Sound.ENTITY_WANDERING_TRADER_YES);
             }
-            e.setCancelled(true);
-
-            if (pl.getLevel() < 1) {
-                cancel(pl);
-                return;
+            case shop3Name -> {
+                e.setCancelled(true);
+                handleShop(pl, good, 50, 3, Sound.BLOCK_ANVIL_BREAK);
             }
-            beWell(pl, 7);
-            order(pl, 1, good, Sound.UI_LOOM_SELECT_PATTERN);
+            case shop4Name -> {
+                e.setCancelled(true);
+                handleShop(pl, good, 1, 4, Sound.BLOCK_NETHER_GOLD_ORE_PLACE);
+            }
+            case shop5Name -> {
+                e.setCancelled(true);
+                handleShop(pl, good, 1, 5, Sound.BLOCK_SAND_HIT);
+            }
+            case shop6Name -> {
+                e.setCancelled(true);
+                handleShop(pl, good, 1, 6, Sound.UI_LOOM_SELECT_PATTERN);
+            }
+            case shop7Name -> {
+                e.setCancelled(true);
+                handleShop(pl, good, 1, 7, Sound.UI_LOOM_SELECT_PATTERN);
+            }
         }
     }
+
+    // 手机商店特殊处理
+    private static final Map<Material, Integer> mobileShopPage1 = Map.of(
+            Material.STONECUTTER, 1,
+            Material.BARREL, 2,
+            Material.BLAST_FURNACE, 3,
+            Material.STRIPPED_CHERRY_LOG, 4,
+            Material.SANDSTONE_WALL, 5,
+            Material.YELLOW_CONCRETE_POWDER, 6,
+            Material.LOOM, 7,
+            Material.PIGLIN_BRUTE_SPAWN_EGG, 8
+    );
+
+    private static final Map<Material, Integer> mobileShopPage2 = Map.of(
+            Material.STONECUTTER, 21,
+            Material.BARREL, 22,
+            Material.STRIPPED_CHERRY_LOG, 24,
+            Material.SANDSTONE_WALL, 25,
+            Material.YELLOW_CONCRETE_POWDER, 26
+    );
+
+    private void handleMobileSuperMarket(Player pl, ItemStack good) {
+        InitializeInventory in = new InitializeInventory();
+        in.open(pl, mobileShopPage2.get(good.getType()));
+    }
+
+    private void handleMobileShop(Player pl, ItemStack good) {
+        InitializeInventory in = new InitializeInventory();
+        in.open(pl, mobileShopPage1.get(good.getType()));
+    }
+
+    // 通用商店处理
+// minLevel: 购买最低等级
+// wellId: 需要调用beWell的商店编号，-1表示不调用
+// sound: 播放音效
+    private void handleShop(Player pl, ItemStack good, int minLevel, int wellId, Sound sound) {
+        if (pl.getLevel() < minLevel) {
+            cancel(pl);
+            return;
+        }
+
+        if (wellId != -1) {
+            beWell(pl, wellId);
+        }
+
+        order(pl, minLevel, good, sound);
+    }
+
 
     public void beWell(Player pl, int num) {
         if (pl.getInventory().firstEmpty() == -1) {
@@ -302,6 +146,7 @@ public class ShopClickEvent implements Listener {
             pl.playSound(pl, Sound.ENTITY_VILLAGER_NO, 1, 1);
             return;
         }
+
         if ((pl.getScoreboardTags().contains("craftsman")) && price < 50) {
             pl.giveExp(-price);
         } else {
