@@ -313,19 +313,25 @@ public class InitializeInventory {
             new ItemStack(Material.BLACK_STAINED_GLASS, 16),
     };
 
-    static final String shop1Name = "建材铺 | §lBLOCKS";
-    static final String shop1NamePro = "建材铺 PRO | §lBLOCKS";
-    static final String shop2Name = "农贸商 | §lARBORS";
-    static final String shop2NamePro = "农贸商 PRO | §lARBORS";
-    static final String shop3Name = "铁匠铺 | §lHANDTOOLS";
-    static final String shop4Name = "木料铺 | §lWOODS";
-    static final String shop4NamePro = "木料铺 PRO | §lWOODS";
-    static final String shop5Name = "加工铺 | §lBUILDINGS";
-    static final String shop5NamePro = "加工铺 PRO | §lBUILDINGS";
-    static final String shop6Name = "土坊 | §lCONCRETE";
-    static final String shop6NamePro = "土坊 PRO | §lCONCRETE";
-    static final String shop7Name = "染坊 | §lDYES";
-    static final String shop7NamePro = "染坊 PRO | §lDYES";
+    static final String shop1Name = "建材铺 | §lBLOCKS §r§7价格： §61 L";
+    static final String shop1NamePro = "建材铺 PRO | §lBLOCKS §r§7价格： §6128 L";
+
+    static final String shop2Name = "农贸商 | §lARBORS §r§7价格： §61 L";
+    static final String shop2NamePro = "农贸商 PRO | §lARBORS §r§7价格： §6128 L";
+
+    static final String shop3Name = "铁匠铺 | §lHANDTOOLS §r§7价格： §650 L";
+
+    static final String shop4Name = "木料铺 | §lWOODS §r§7价格： §61 L";
+    static final String shop4NamePro = "木料铺 PRO | §lWOODS §r§7价格： §6128 L";
+
+    static final String shop5Name = "加工铺 | §lBUILDINGS §r§7价格： §61 L";
+    static final String shop5NamePro = "加工铺 PRO | §lBUILDINGS §r§7价格： §6128 L";
+
+    static final String shop6Name = "土坊 | §lCONCRETE §r§7价格： §61 L";
+    static final String shop6NamePro = "土坊 PRO | §lCONCRETE §r§7价格： §6128 L";
+
+    static final String shop7Name = "染坊 | §lDYES §r§7价格： §61 L";
+    static final String shop7NamePro = "染坊 PRO | §lDYES §r§7价格： §6128 L";
 
 
     public static void open(Player pl, int mode) {
