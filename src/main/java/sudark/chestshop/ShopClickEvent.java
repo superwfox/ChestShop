@@ -79,7 +79,6 @@ public class ShopClickEvent implements Listener {
         }
     }
 
-    // 手机商店特殊处理
     private static final Map<Material, Integer> mobileShopPage1 = Map.of(
             Material.STONECUTTER, 1,
             Material.BARREL, 2,
@@ -96,7 +95,8 @@ public class ShopClickEvent implements Listener {
             Material.BARREL, 22,
             Material.STRIPPED_CHERRY_LOG, 24,
             Material.SANDSTONE_WALL, 25,
-            Material.YELLOW_CONCRETE_POWDER, 26
+            Material.YELLOW_CONCRETE_POWDER, 26,
+            Material.LOOM, 27
     );
 
     private void handleMobileSuperMarket(Player pl, ItemStack good) {

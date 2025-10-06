@@ -280,6 +280,7 @@ public class ToggleOpenAndBlockPlace implements Listener {
 
         int amount = pdc.getOrDefault(amountKey, PersistentDataType.INTEGER, 0);
         if (amount > 0) {
+            if (item.getAmount() > 1) amount = amount * item.getAmount();
             item.setAmount(1);
             pdc.set(amountKey, PersistentDataType.INTEGER, amount - 1);
             meta.setLore(List.of("§7+" + (amount - 1)));
