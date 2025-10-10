@@ -192,6 +192,7 @@ public class ToggleOpenAndBlockPlace implements Listener {
     //选取购买专用
     List<ItemStack[]> shops = Arrays.asList(
             shopSetting1,
+            shopSetting2,
             shopSetting4,
             shopSetting5,
             shopSetting6,
@@ -221,20 +222,19 @@ public class ToggleOpenAndBlockPlace implements Listener {
         }
 
         for (ItemStack[] shop : shops) {
-            for (int i = 0; i < shop.length; i++) {
-                if (bl.getType().equals(shop[i].getType())) {
-                    ItemStack item = shop[i];
+            for (ItemStack itemStack : shop) {
+                if (bl.getType().equals(itemStack.getType())) {
 
                     if (pl.getLevel() < 1) {
                         pl.sendMessage("[§e口袋商店§f] 等级不足!");
                         return;
                     }
 
-                    if (pl.getInventory().contains(item.getType(), 32)) return;
+                    if (pl.getInventory().contains(itemStack.getType(), 32)) return;
                     pl.playSound(pl, Sound.ENTITY_VILLAGER_TRADE, 1, 1);
-                    pl.sendActionBar("[§e口袋商店§f] §b" + item.getType() + " §f:§e " + item.getAmount());
+                    pl.sendActionBar("[§e口袋商店§f] §b" + itemStack.getType() + " §f:§e " + itemStack.getAmount());
                     pl.giveExpLevels(-2);
-                    pl.getInventory().addItem(item);
+                    pl.getInventory().addItem(itemStack);
                     return;
                 }
             }
