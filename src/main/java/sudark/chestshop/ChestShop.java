@@ -38,7 +38,7 @@ public final class ChestShop extends JavaPlugin {
         ensureObjectiveExists("SHOP_6");
         ensureObjectiveExists("SHOP_7");
 
-        amountKey = new NamespacedKey(get(), "extra_amount");
+        amountKey = new NamespacedKey("sudark", "extra_amount");
     }
 
     public static Plugin get() {
