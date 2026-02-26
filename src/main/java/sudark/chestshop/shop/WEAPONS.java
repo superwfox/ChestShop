@@ -1,4 +1,4 @@
-package sudark.chestshop;
+package sudark.chestshop.shop;
 
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
@@ -16,12 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static sudark.chestshop.InitializeInventory.shopSetting3;
+import static sudark.chestshop.shop.InitializeInventory.shopSetting3;
 
 public class WEAPONS {
     static List<ItemStack> WEAPONS = new ArrayList<>();
 
-    static void initialiseWeapon() {
+    public static void initialiseWeapon() {
 
         new BukkitRunnable() {
             @Override
@@ -48,9 +48,6 @@ public class WEAPONS {
 
         WEAPONS.add(Golden(Material.GOLDEN_APPLE));
 
-        WEAPONS.add(Golden(Material.NETHERITE_AXE));
-        WEAPONS.add(Golden(Material.NETHERITE_PICKAXE));
-        WEAPONS.add(Golden(Material.NETHERITE_SWORD));
         WEAPONS.add(Golden(Material.NETHERITE_SHOVEL));
         WEAPONS.add(Golden(Material.NETHERITE_HOE));
 
@@ -61,15 +58,13 @@ public class WEAPONS {
         crossbowMeta.addEnchant(Enchantment.INFINITY, 1, true);
         crossbow.setItemMeta(crossbowMeta);
 
-
         ItemStack shield = new ItemStack(Material.SHIELD, 1);
         BlockStateMeta shieldMeta = (BlockStateMeta) shield.getItemMeta();
         shieldMeta.setUnbreakable(true);
         shieldMeta.setEnchantmentGlintOverride(true);
         shieldMeta.setLore(java.util.Arrays.asList(
                 "§7散发着微弱的紫色光芒，",
-                "§7盾面上刻有古老的符文"
-        ));
+                "§7盾面上刻有古老的符文"));
 
         Banner bannerState = (Banner) shieldMeta.getBlockState();
         bannerState.setBaseColor(DyeColor.ORANGE);

@@ -6,3 +6,6 @@ commands:
   enchants:
     description: "Enchants a item"
     usage: "/enchants <item> <enchant> <level>"
+  shop:
+    description: "Manage shop items"
+    usage: "/shop <shopName|reload>"

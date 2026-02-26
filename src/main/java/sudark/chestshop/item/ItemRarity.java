@@ -1,4 +1,4 @@
-package sudark.chestshop;
+package sudark.chestshop.item;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -11,8 +11,10 @@ public class ItemRarity {
     public static final Map<Material, Rarity> RARITY_MAP = new HashMap<>();
 
     public static Rarity checkRarity(ItemStack m) {
-        if (m.getType().name().contains("DIAMOND")) return Rarity.UNCOMMON;
-        if (m.getType().name().contains("NETHERITE")) return Rarity.RARE;
+        if (m.getType().name().contains("DIAMOND"))
+            return Rarity.UNCOMMON;
+        if (m.getType().name().contains("NETHERITE"))
+            return Rarity.RARE;
         return RARITY_MAP.getOrDefault(m.getType(), Rarity.COMMON);
     }
 
@@ -38,7 +40,7 @@ public class ItemRarity {
         RARITY_MAP.put(Material.ENDER_PEARL, Rarity.UNCOMMON);
         RARITY_MAP.put(Material.BLAZE_ROD, Rarity.UNCOMMON);
         RARITY_MAP.put(Material.TOTEM_OF_UNDYING, Rarity.UNCOMMON);
-        RARITY_MAP.put(Material.TURTLE_SCUTE, Rarity.UNCOMMON); // 海龟壳
+        RARITY_MAP.put(Material.TURTLE_SCUTE, Rarity.UNCOMMON);
         RARITY_MAP.put(Material.SLIME_BALL, Rarity.UNCOMMON);
         RARITY_MAP.put(Material.GHAST_TEAR, Rarity.UNCOMMON);
         RARITY_MAP.put(Material.ENDER_EYE, Rarity.UNCOMMON);
@@ -87,7 +89,7 @@ public class ItemRarity {
         RARITY_MAP.put(Material.LODESTONE, Rarity.RARE);
         RARITY_MAP.put(Material.RESPAWN_ANCHOR, Rarity.RARE);
         RARITY_MAP.put(Material.BUDDING_AMETHYST, Rarity.RARE);
-        RARITY_MAP.put(Material.DEEPSLATE_EMERALD_ORE, Rarity.RARE); // 极难生成
+        RARITY_MAP.put(Material.DEEPSLATE_EMERALD_ORE, Rarity.RARE);
         RARITY_MAP.put(Material.MANGROVE_PROPAGULE, Rarity.RARE);
         RARITY_MAP.put(Material.SCULK_SENSOR, Rarity.RARE);
         RARITY_MAP.put(Material.REINFORCED_DEEPSLATE, Rarity.RARE);
@@ -108,12 +110,12 @@ public class ItemRarity {
         RARITY_MAP.put(Material.DRAGON_HEAD, Rarity.EPIC);
         RARITY_MAP.put(Material.ENCHANTED_GOLDEN_APPLE, Rarity.EPIC);
         RARITY_MAP.put(Material.DRAGON_EGG, Rarity.EPIC);
-        RARITY_MAP.put(Material.SUSPICIOUS_SAND, Rarity.EPIC); // 考古道具
+        RARITY_MAP.put(Material.SUSPICIOUS_SAND, Rarity.EPIC);
         RARITY_MAP.put(Material.SUSPICIOUS_GRAVEL, Rarity.EPIC);
-        RARITY_MAP.put(Material.SNIFFER_EGG, Rarity.EPIC); // 古代生物蛋
+        RARITY_MAP.put(Material.SNIFFER_EGG, Rarity.EPIC);
         RARITY_MAP.put(Material.SNIFFER_SPAWN_EGG, Rarity.EPIC);
         RARITY_MAP.put(Material.FILLED_MAP, Rarity.EPIC);
-        RARITY_MAP.put(Material.MAP, Rarity.EPIC); // 替代特殊宝藏图
+        RARITY_MAP.put(Material.MAP, Rarity.EPIC);
 
         RARITY_MAP.put(Material.MUSIC_DISC_WAIT, Rarity.EXTRAORDINARY);
         RARITY_MAP.put(Material.NETHER_STAR, Rarity.EXTRAORDINARY);
@@ -121,8 +123,5 @@ public class ItemRarity {
         RARITY_MAP.put(Material.REPEATING_COMMAND_BLOCK, Rarity.EXTRAORDINARY);
         RARITY_MAP.put(Material.CHAIN_COMMAND_BLOCK, Rarity.EXTRAORDINARY);
         RARITY_MAP.put(Material.RECOVERY_COMPASS, Rarity.EXTRAORDINARY);
-
     }
-
-
 }

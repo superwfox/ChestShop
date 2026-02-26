@@ -1,4 +1,4 @@
-package sudark.chestshop;
+package sudark.chestshop.shop;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -14,27 +14,27 @@ import org.bukkit.scoreboard.Score;
 
 import java.util.Map;
 
-import static sudark.chestshop.InitializeInventory.*;
+import static sudark.chestshop.shop.InitializeInventory.*;
 
 public class ShopClickEvent implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if (e.getClickedInventory() instanceof PlayerInventory) return;
+        if (e.getClickedInventory() instanceof PlayerInventory)
+            return;
 
         Player pl = (Player) e.getWhoClicked();
         ItemStack good = e.getCurrentItem();
-        if (good == null) return;
+        if (good == null)
+            return;
 
         String name = e.getView().getTitle();
 
-        // 统一判断是否点击了玻璃板
         if (good.getType() == Material.LIGHT_GRAY_STAINED_GLASS_PANE) {
             e.setCancelled(true);
             return;
         }
 
-// 只处理特定商店界面
         switch (name) {
             case "口袋商店 | §lMobileShop" -> {
                 e.setCancelled(true);
@@ -87,8 +87,7 @@ public class ShopClickEvent implements Listener {
             Material.SANDSTONE_WALL, 5,
             Material.YELLOW_CONCRETE_POWDER, 6,
             Material.LOOM, 7,
-            Material.PIGLIN_BRUTE_SPAWN_EGG, 8
-    );
+            Material.PIGLIN_BRUTE_SPAWN_EGG, 8);
 
     private static final Map<Material, Integer> mobileShopPage2 = Map.of(
             Material.STONECUTTER, 21,
@@ -96,23 +95,16 @@ public class ShopClickEvent implements Listener {
             Material.STRIPPED_CHERRY_LOG, 24,
             Material.SANDSTONE_WALL, 25,
             Material.YELLOW_CONCRETE_POWDER, 26,
-            Material.LOOM, 27
-    );
+            Material.LOOM, 27);
 
     private void handleMobileSuperMarket(Player pl, ItemStack good) {
-        InitializeInventory in = new InitializeInventory();
-        in.open(pl, mobileShopPage2.get(good.getType()));
+        InitializeInventory.open(pl, mobileShopPage2.get(good.getType()));
     }
 
     private void handleMobileShop(Player pl, ItemStack good) {
-        InitializeInventory in = new InitializeInventory();
-        in.open(pl, mobileShopPage1.get(good.getType()));
+        InitializeInventory.open(pl, mobileShopPage1.get(good.getType()));
     }
 
-    // 通用商店处理
-// minLevel: 购买最低等级
-// wellId: 需要调用beWell的商店编号，-1表示不调用
-// sound: 播放音效
     private void handleShop(Player pl, ItemStack good, int minLevel, int wellId, Sound sound) {
         if (pl.getLevel() < minLevel) {
             cancel(pl);
@@ -125,7 +117,6 @@ public class ShopClickEvent implements Listener {
 
         order(pl, minLevel, good, sound);
     }
-
 
     public void beWell(Player pl, int num) {
         if (pl.getInventory().firstEmpty() == -1) {
@@ -156,6 +147,4 @@ public class ShopClickEvent implements Listener {
         pl.getInventory().addItem(good);
         pl.playSound(pl, sound, 1, 1);
     }
-
-
 }

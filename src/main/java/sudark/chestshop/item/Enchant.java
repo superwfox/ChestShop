@@ -1,4 +1,4 @@
-package sudark.chestshop;
+package sudark.chestshop.item;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -9,25 +9,28 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import sudark.chestshop.shop.InitializeInventory;
 
 public class Enchant implements CommandExecutor {
 
     @Override
-    public boolean onCommand(org.bukkit.command.CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
+    public boolean onCommand(org.bukkit.command.CommandSender sender, org.bukkit.command.Command cmd, String label,
+            String[] args) {
 
         if (cmd.getName().equalsIgnoreCase("enchants") && sender instanceof BlockCommandSender block) {
             Player player = block.getBlock().getLocation().add(0.5, 2.0, 0.5)
                     .getNearbyPlayers(0.5).stream().findFirst().orElse(null);
-            if (player == null) return false;
+            if (player == null)
+                return false;
 
             if (args.length == 1) {
                 Location loc = player.getLocation();
                 float yaw = loc.getYaw();
 
                 double x = -Math.sin(Math.toRadians(yaw));
-                double z =  Math.cos(Math.toRadians(yaw));
+                double z = Math.cos(Math.toRadians(yaw));
 
-                loc.add(x * -2, 0, z * -2); // -2 表示向后两格
+                loc.add(x * -2, 0, z * -2);
                 player.teleport(loc);
 
                 switch (Integer.parseInt(args[0])) {
@@ -70,5 +73,4 @@ public class Enchant implements CommandExecutor {
 
         return false;
     }
-
 }

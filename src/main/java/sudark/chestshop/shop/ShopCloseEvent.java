@@ -1,4 +1,4 @@
-package sudark.chestshop;
+package sudark.chestshop.shop;
 
 import org.bukkit.*;
 import org.bukkit.entity.Item;
@@ -10,19 +10,22 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import sudark.chestshop.ChestShop;
+import sudark.chestshop.item.ItemRarity;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.bukkit.plugin.java.JavaPlugin.getPlugin;
-import static sudark.chestshop.ItemRarity.checkRarity;
+import static sudark.chestshop.item.ItemRarity.checkRarity;
 
 public class ShopCloseEvent implements Listener {
 
     @EventHandler
     public void onClose(InventoryCloseEvent e) {
 
-        if (!e.getView().getTitle().equals("狮首祭台 | §lCYCLE")) return;
+        if (!e.getView().getTitle().equals("狮首祭台 | §lCYCLE"))
+            return;
 
         Player pl = (Player) e.getPlayer();
 
@@ -31,7 +34,8 @@ public class ShopCloseEvent implements Listener {
 
         for (ItemStack item : e.getInventory().getContents()) {
 
-            if (item == null || item.getType().isAir()) continue;
+            if (item == null || item.getType().isAir())
+                continue;
             countMap.merge(item.getType(), item.getAmount(), Integer::sum);
 
             int c = 0;
@@ -51,7 +55,6 @@ public class ShopCloseEvent implements Listener {
             return;
         }
 
-
         int max = countMap.values().stream().max(Integer::compare).orElse(0);
         if (max > 64) {
             respond *= Math.pow(1.1, max / 64);
@@ -67,13 +70,15 @@ public class ShopCloseEvent implements Listener {
             public void run() {
                 i++;
                 gld(pl);
-                if (i == 7) cancel();
+                if (i == 7)
+                    cancel();
             }
         }.runTaskTimer(getPlugin(ChestShop.class), 0, 10l);
 
         pl.addPotionEffect(new PotionEffect(PotionEffectType.LUCK, 2, 1));
         pl.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 2, 1));
-        title(pl, "[§e 狮首祭台 §f]", "§7你得到了 " + respond + " 福禄" + (max > 64 ? "§7 (x" + String.format("%.3f", Math.pow(1.1, max / 64)) + ")" : ""));
+        title(pl, "[§e 狮首祭台 §f]", "§7你得到了 " + respond + " 福禄"
+                + (max > 64 ? "§7 (x" + String.format("%.3f", Math.pow(1.1, max / 64)) + ")" : ""));
 
     }
 
@@ -81,7 +86,8 @@ public class ShopCloseEvent implements Listener {
         Particle.DustTransition dustTransition = new Particle.DustTransition(Color.YELLOW, Color.AQUA, 0.8F);
         ItemStack goldBlockItem = new ItemStack(Material.GOLD_INGOT);
         final Item gold = pl.getWorld().dropItemNaturally(pl.getLocation().add(0, 1.5, 0), goldBlockItem);
-        pl.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, pl.getLocation().add(0, 1.5, 0), 10, 0.5, 0.5, 0.5, 0.10000000149011612, dustTransition);
+        pl.getWorld().spawnParticle(Particle.DUST_COLOR_TRANSITION, pl.getLocation().add(0, 1.5, 0), 10, 0.5, 0.5, 0.5,
+                0.10000000149011612, dustTransition);
         gold.setCanPlayerPickup(false);
 
         (new BukkitRunnable() {

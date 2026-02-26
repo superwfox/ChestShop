@@ -6,16 +6,17 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Scoreboard;
+import sudark.chestshop.item.Enchant;
+import sudark.chestshop.shop.*;
 
 public final class ChestShop extends JavaPlugin {
 
-    public static NamespacedKey amountKey;
+    public static NamespacedKey amountKey = new NamespacedKey("sudark", "extra_amount");
 
-    static ItemStack Blank = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1);
+    public static ItemStack Blank = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE, 1);
 
     @Override
     public void onEnable() {
@@ -23,11 +24,16 @@ public final class ChestShop extends JavaPlugin {
         meta.setDisplayName(" ");
         Blank.setItemMeta(meta);
 
+        saveDefaultConfig();
+        ShopData.load();
+
         Bukkit.getPluginManager().registerEvents(new ToggleOpenAndBlockPlace(), this);
         Bukkit.getPluginManager().registerEvents(new ShopClickEvent(), this);
         Bukkit.getPluginManager().registerEvents(new ShopCloseEvent(), this);
 
         Bukkit.getPluginCommand("enchants").setExecutor(new Enchant());
+        Bukkit.getPluginCommand("shop").setExecutor(new ShopCommand());
+        Bukkit.getPluginCommand("shop").setTabCompleter(new ShopTabCompleter());
         WEAPONS.initialiseWeapon();
 
         ensureObjectiveExists("SHOP_1");
@@ -37,12 +43,10 @@ public final class ChestShop extends JavaPlugin {
         ensureObjectiveExists("SHOP_5");
         ensureObjectiveExists("SHOP_6");
         ensureObjectiveExists("SHOP_7");
-
-        amountKey = new NamespacedKey("sudark", "extra_amount");
     }
 
-    public static Plugin get() {
-        return Bukkit.getPluginManager().getPlugin("ChestShop");
+    public static ChestShop get() {
+        return (ChestShop) Bukkit.getPluginManager().getPlugin("ChestShop");
     }
 
     public static void ensureObjectiveExists(String name) {
@@ -51,6 +55,4 @@ public final class ChestShop extends JavaPlugin {
             board.registerNewObjective(name, Criteria.DUMMY, Component.text(name));
         }
     }
-
-
 }
